@@ -1,0 +1,4 @@
+first_name,last_name,email,company_name,job_title,industry,country,pain_point,lead_message
+Sarah,Chen,schen@fintekvault.io,FintekVault,CTO,FinTech,Singapore,Legacy payment infrastructure slowing down expansion into Southeast Asian markets,We process 2M transactions/month but our batch settlement system cant keep up. Looking for real-time payment orchestration.
+Marcus,Okafor,marcus@agriflow.ng,AgriFlow Technologies,Head of Growth,AgriTech,Nigeria,Farmers cant access market pricing data in rural areas with poor connectivity,We have 50k smallholder farmers on our platform but churn is 30% because the offline experience is terrible. Need a better mobile-first solution.
+Elena,Voronova,elena@medibridge.eu,MediBridge Health,VP of Product,HealthTech,Germany,Clinical trial patient matching takes weeks instead of hours,Our hospital partners are losing 40% of eligible trial candidates because manual screening is too slow. We need AI-powered matching.

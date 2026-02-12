@@ -1,0 +1,93 @@
+{
+  "score_responses": {
+    "hot_lead": {
+      "score_value": 85,
+      "score_label": "HOT",
+      "rationale": "High urgency with clear budget range ($50k-$100k) and specific pain point. Enterprise company with decision-maker contact (Director level). Strong buying signals and immediate need."
+    },
+    "warm_lead": {
+      "score_value": 65,
+      "score_label": "WARM",
+      "rationale": "Medium urgency with identified pain point but unclear budget. Mid-size company with appropriate contact level. Shows interest but may need nurturing before purchase decision."
+    },
+    "cold_lead": {
+      "score_value": 30,
+      "score_label": "COLD",
+      "rationale": "Low urgency with minimal information provided. Personal email domain suggests small or individual operation. Limited budget range and unclear pain point make this a low-priority lead."
+    },
+    "enterprise_lead": {
+      "score_value": 90,
+      "score_label": "HOT",
+      "rationale": "Enterprise-scale opportunity with C-level contact and substantial budget ($250k+). Clear pain point affecting 10k+ leads monthly. High urgency and strong buying authority. Premium prospect."
+    },
+    "startup_lead": {
+      "score_value": 55,
+      "score_label": "WARM",
+      "rationale": "Early-stage startup with founder-level contact but limited budget ($10k-$50k). Medium urgency and clear use case. May grow into larger opportunity but currently moderate priority."
+    }
+  },
+  "decision_responses": {
+    "send_email": {
+      "action": "SEND_EMAIL",
+      "reasoning": "Hot lead with all required information. High urgency, clear budget, and decision-maker contact. Ready for immediate personalized outreach.",
+      "missing_fields": []
+    },
+    "ask_question": {
+      "action": "ASK_QUESTION",
+      "reasoning": "Promising lead but missing critical information about budget and timeline. Should engage with qualifying questions before proceeding.",
+      "missing_fields": ["budget_range", "urgency"]
+    },
+    "disqualify": {
+      "action": "DISQUALIFY",
+      "reasoning": "Lead does not meet minimum qualification criteria. Personal email, no clear budget, and very low urgency suggest this is not a serious opportunity.",
+      "missing_fields": []
+    },
+    "hold": {
+      "action": "HOLD",
+      "reasoning": "Insufficient information to make a decision. Missing key fields and unclear buying signals. Place in nurture sequence for now.",
+      "missing_fields": ["company_size", "industry", "job_title"]
+    }
+  },
+  "email_draft_responses": {
+    "first_touch_enterprise": {
+      "subject": "Solving Your Lead Qualification Challenge at Acme Corp",
+      "body": "Hi John,\n\nI noticed you're looking to automate lead qualification at Acme Corp. With 1000+ leads per month, manual processing must be overwhelming.\n\nLeadOps Agent can help you automatically qualify, score, and route leads in seconds instead of hours. Companies similar to yours have seen:\n\n• 80% reduction in qualification time\n• 3x improvement in lead response speed\n• 40% increase in conversion rates\n\nI'd love to show you how we can handle your volume with precision. Are you available for a quick 15-minute demo next week?\n\nBest regards,\nSales Team",
+      "variant": "first_touch"
+    },
+    "ask_question_variant": {
+      "subject": "Quick question about your lead automation needs",
+      "body": "Hi Jane,\n\nThank you for your interest in LeadOps Agent. To ensure we provide the best solution for Enterprise Solutions Inc, I have a couple of quick questions:\n\n1. What's your typical monthly lead volume?\n2. What's your timeline for implementing a solution?\n3. What's your budget range for lead automation?\n\nThis will help me tailor a demo specifically to your needs and ensure we're a good fit.\n\nLooking forward to hearing from you!\n\nBest regards,\nSales Team",
+      "variant": "first_touch"
+    },
+    "follow_up_1": {
+      "subject": "Re: Lead automation for Acme Corp",
+      "body": "Hi John,\n\nI wanted to follow up on my previous email about automating your lead qualification process.\n\nI understand you're busy, but I believe LeadOps Agent could save your team significant time. Based on your volume (1000+ leads/month), we estimate you could save 100+ hours monthly.\n\nWould a brief 10-minute call work better than a full demo? I'm happy to work around your schedule.\n\nBest regards,\nSales Team",
+      "variant": "follow_up_1"
+    },
+    "follow_up_2": {
+      "subject": "Last check-in: Lead automation solution",
+      "body": "Hi John,\n\nI wanted to reach out one more time regarding automating your lead qualification at Acme Corp.\n\nI realize timing might not be right, or perhaps you've found another solution. If you're still interested, I'm here to help. Otherwise, I'll respectfully close your file and won't reach out again.\n\nJust reply with \"interested\" and I'll send you some times for a quick chat.\n\nBest regards,\nSales Team",
+      "variant": "follow_up_2"
+    },
+    "breakup_email": {
+      "subject": "Closing your file",
+      "body": "Hi John,\n\nI haven't heard back from you, so I assume now isn't the right time for a lead automation solution at Acme Corp.\n\nI'm going to close your file for now. If circumstances change and you'd like to explore LeadOps Agent in the future, feel free to reach out anytime.\n\nI wish you and your team the best of luck with your lead qualification process.\n\nBest regards,\nSales Team",
+      "variant": "breakup"
+    }
+  },
+  "error_responses": {
+    "rate_limit_error": {
+      "error": "Rate limit exceeded",
+      "retry_after": 60,
+      "message": "Too many requests. Please try again in 60 seconds."
+    },
+    "invalid_api_key": {
+      "error": "Authentication failed",
+      "message": "Invalid or missing API key. Please check your configuration."
+    },
+    "model_unavailable": {
+      "error": "Model unavailable",
+      "message": "The requested model is currently unavailable. Using fallback scoring."
+    }
+  }
+}

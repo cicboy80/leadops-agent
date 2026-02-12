@@ -1,0 +1,34 @@
+{
+  "first_touch": {
+    "subject_template": "Quick question about {{company_name}}'s {{pain_point}}",
+    "body_template": "Hi {{first_name}},\n\nI noticed that {{company_name}} might be experiencing {{pain_point}}. This is a common challenge we help {{industry}} companies solve.\n\nWe've helped similar organizations reduce manual work by up to 70% through intelligent lead automation and workflow orchestration.\n\nWould you be open to a brief 15-minute conversation about how we could help {{company_name}} streamline your lead management process?\n\nBest regards,\n[Your Name]\nLeadOps Agent"
+  },
+  "follow_up_1": {
+    "subject_template": "Re: {{company_name}} - Following up",
+    "body_template": "Hi {{first_name}},\n\nI wanted to follow up on my previous email about helping {{company_name}} address {{pain_point}}.\n\nI understand you're busy, so I'll keep this brief. Here's what we could help you achieve:\n\n• Automated lead qualification and scoring\n• Intelligent follow-up sequences\n• Seamless CRM integration\n• Time savings of 10-15 hours per week for your team\n\nWould next Tuesday or Wednesday work for a quick call?\n\nBest,\n[Your Name]\nLeadOps Agent"
+  },
+  "follow_up_2": {
+    "subject_template": "{{first_name}}, one last note about {{company_name}}'s lead workflow",
+    "body_template": "Hi {{first_name}},\n\nI know I've reached out a couple of times now about {{pain_point}} at {{company_name}}.\n\nI wanted to share a quick case study: We recently helped a {{industry}} company similar to yours increase their lead conversion rate by 45% within 60 days. They were dealing with the exact same challenge around {{pain_point}}.\n\nIf this resonates, I'd love to show you how we did it. If not, no worries - I won't clutter your inbox anymore.\n\nJust reply with \"interested\" or \"not now\" and I'll take it from there.\n\nThanks for your time,\n[Your Name]\nLeadOps Agent"
+  },
+  "follow_up_3": {
+    "subject_template": "{{company_name}} - Resource that might help",
+    "body_template": "Hi {{first_name}},\n\nEven if we don't end up working together, I wanted to share a resource that might help {{company_name}} with {{pain_point}}.\n\nWe published a guide on \"5 Ways to Automate Lead Qualification Without Breaking Your Workflow\" - it's based on what we've seen work across hundreds of {{industry}} companies.\n\nNo strings attached - just thought it might be useful for your team.\n\n[Download Link]\n\nAll the best,\n[Your Name]\nLeadOps Agent"
+  },
+  "breakup": {
+    "subject_template": "Closing the loop - {{company_name}}",
+    "body_template": "Hi {{first_name}},\n\nI haven't heard back from you, so I'm assuming that solving {{pain_point}} isn't a priority for {{company_name}} right now - and that's completely okay.\n\nI'm going to close out my notes on our conversation, but if things change in the future, you know where to find me.\n\nIf I've misread the situation and you'd still like to chat, just reply to this email and we'll get something on the calendar.\n\nWishing you and {{company_name}} all the best,\n[Your Name]\nLeadOps Agent\n\nP.S. - Feel free to reach out anytime, even if it's 6 months from now. We'll still be here to help."
+  },
+  "question_clarification": {
+    "subject_template": "Quick clarification needed - {{company_name}}",
+    "body_template": "Hi {{first_name}},\n\nThanks for your interest in LeadOps Agent for {{company_name}}.\n\nTo make sure I can provide you with the most relevant information about solving {{pain_point}}, I have a couple of quick questions:\n\n1. How many leads does {{company_name}} typically handle per month?\n2. What tools are you currently using for lead management?\n3. What would success look like for you in the next 90 days?\n\nOnce I have these details, I can tailor a solution specifically for your needs.\n\nLooking forward to hearing from you,\n[Your Name]\nLeadOps Agent"
+  },
+  "demo_invitation": {
+    "subject_template": "{{first_name}}, let's see LeadOps Agent in action",
+    "body_template": "Hi {{first_name}},\n\nBased on what you've shared about {{pain_point}} at {{company_name}}, I think you'd benefit from seeing LeadOps Agent in action.\n\nI'd like to schedule a personalized demo where I'll show you:\n\n• How we'd automate your current lead intake process\n• Live scoring and qualification in real-time\n• Automated follow-up sequences tailored to {{industry}}\n• Integration with your existing CRM\n\nThe demo takes about 30 minutes and I'll customize it to {{company_name}}'s specific workflow.\n\nDoes Thursday at 2pm or Friday at 10am work for you?\n\nBest,\n[Your Name]\nLeadOps Agent"
+  },
+  "high_urgency_response": {
+    "subject_template": "{{first_name}} - Let's prioritize this",
+    "body_template": "Hi {{first_name}},\n\nI can tell from your message that addressing {{pain_point}} is urgent for {{company_name}}.\n\nI want to make sure we move quickly. Here's what I propose:\n\n1. Quick discovery call (15 min) - as early as tomorrow\n2. Customized solution proposal within 48 hours\n3. Pilot program start within 1 week\n\nGiven your urgency, I'm happy to prioritize {{company_name}} and get you up and running fast.\n\nCan we jump on a call tomorrow? I have availability at 9am, 11am, or 3pm.\n\nTalk soon,\n[Your Name]\nLeadOps Agent"
+  }
+}

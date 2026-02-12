@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: leadops
+      POSTGRES_PASSWORD: leadops
+      POSTGRES_DB: leadops
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leadops"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://leadops:leadops@postgres:5432/leadops
+      CORS_ORIGINS: http://localhost:3000
+      API_KEY: dev-api-key-change-me
+      LLM_PROVIDER: openai
+      LLM_MODEL_FAST: gpt-4o-mini
+      LLM_MODEL_QUALITY: gpt-4o
+      EMAIL_MODE: mock
+      ENVIRONMENT: development
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

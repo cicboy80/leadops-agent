@@ -1,0 +1,6 @@
+first_name,last_name,email,company_name,job_title,phone,industry,company_size,country,source,budget_range,pain_point,urgency
+Sarah,Chen,sarah.chen@techvault.io,TechVault Inc,VP of Engineering,+1-415-555-0101,Technology,51-200,US,web_form,$50k-100k,Struggling with lead response times taking over 48 hours,high
+Marcus,Johnson,marcus.j@growthmetrics.com,GrowthMetrics,Head of Sales,+1-212-555-0202,SaaS,11-50,US,partner,$10k-25k,Manual lead scoring is inconsistent across reps,medium
+Priya,Patel,priya@cloudnine.dev,CloudNine Solutions,CTO,+44-20-7946-0303,Cloud Services,201-500,UK,referral,$100k+,Need to automate outbound email sequences at scale,high
+James,Wilson,james.wilson@retailedge.co,RetailEdge,Marketing Director,+1-312-555-0404,Retail,501-1000,US,event,$25k-50k,Poor conversion rates on inbound leads,low
+Ana,Rodriguez,ana.r@fintechflow.com,FintechFlow,COO,+1-305-555-0505,Financial Services,51-200,US,outbound,$50k-100k,Sales team spends too much time on unqualified leads,high
