@@ -184,13 +184,18 @@ export function FeedbackForm({ leadId, currentStage, onSuccess }: FeedbackFormPr
         // If classification exists, show manual override as collapsible
         if (latestClassification && !showManualOverride) {
           return (
-            <button
-              onClick={() => setShowManualOverride(true)}
-              className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
-            >
-              <ChevronDown className="w-3 h-3" />
-              Manual stage override
-            </button>
+            <div className="space-y-1">
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                Use manual override to close the deal (Won/Lost).
+              </p>
+              <button
+                onClick={() => setShowManualOverride(true)}
+                className="flex items-center gap-1 text-sm font-medium text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-200"
+              >
+                <ChevronDown className="w-4 h-4" />
+                Manual stage override
+              </button>
+            </div>
           );
         }
 

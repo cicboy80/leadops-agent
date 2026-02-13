@@ -86,7 +86,10 @@ export function DashboardContent({
             )}
           </div>
           <div className="flex items-center gap-3">
-            <ProcessLeadsButton onProcessingComplete={refreshData} />
+            <ProcessLeadsButton
+              onProcessingComplete={refreshData}
+              hasUnscoredLeads={leads.some((l) => l.score_value === null || l.score_value === undefined)}
+            />
             <a href="/upload" className="btn-primary">
               Upload New Leads
             </a>

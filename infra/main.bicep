@@ -10,9 +10,9 @@ param environment string = 'dev'
 @description('Azure region for all resources')
 param location string = 'westeurope'
 
-@description('PostgreSQL administrator password')
+@description('External database connection string (e.g. Neon PostgreSQL)')
 @secure()
-param postgresAdminPassword string
+param databaseUrl string
 
 @description('OpenAI API key')
 @secure()
@@ -36,7 +36,6 @@ var projectName = 'leadops'
 var uniqueSuffix = uniqueString(resourceGroup().id)
 var logAnalyticsName = '${projectName}-logs-${environment}-${uniqueSuffix}'
 var containerAppsEnvName = '${projectName}-env-${environment}-${uniqueSuffix}'
-var postgresServerName = '${projectName}-db-${environment}-${uniqueSuffix}'
 var keyVaultName = '${projectName}-kv-${environment}-${substring(uniqueSuffix, 0, 5)}'
 var backendAppName = '${projectName}-backend-${environment}'
 var frontendAppName = '${projectName}-frontend-${environment}'
@@ -69,18 +68,7 @@ module containerAppsEnv './modules/container-apps-env.bicep' = {
   }
 }
 
-// 3. PostgreSQL Flexible Server
-module postgres './modules/postgres.bicep' = {
-  name: 'postgres-deployment'
-  params: {
-    serverName: postgresServerName
-    location: location
-    administratorPassword: postgresAdminPassword
-    environment: environment
-  }
-}
-
-// 4. Key Vault
+// 3. Key Vault (database hosted externally on Neon free tier)
 module keyVault './modules/key-vault.bicep' = {
   name: 'keyVault-deployment'
   params: {
@@ -90,7 +78,7 @@ module keyVault './modules/key-vault.bicep' = {
     secrets: [
       {
         name: 'database-connection-string'
-        value: 'postgresql://leadopsadmin:${postgresAdminPassword}@${postgres.outputs.fqdn}:5432/leadops?sslmode=require'
+        value: databaseUrl
       }
       {
         name: 'openai-api-key'
@@ -104,7 +92,7 @@ module keyVault './modules/key-vault.bicep' = {
   }
 }
 
-// 5. Backend Container App
+// 4. Backend Container App
 module backendApp './modules/container-apps.bicep' = {
   name: 'backendApp-deployment'
   params: {
@@ -114,7 +102,7 @@ module backendApp './modules/container-apps.bicep' = {
     containerImage: '${acr.properties.loginServer}/leadops-backend:${backendImageTag}'
     targetPort: 8000
     environment: environment
-    minReplicas: environment == 'prod' ? 2 : 1
+    minReplicas: environment == 'prod' ? 2 : 0
     maxReplicas: environment == 'prod' ? 10 : 3
     acrServer: acr.properties.loginServer
     environmentVariables: [
@@ -139,6 +127,10 @@ module backendApp './modules/container-apps.bicep' = {
         value: 'openai'
       }
       {
+        name: 'AUTO_SEED_DEMO'
+        value: 'true'
+      }
+      {
         name: 'CORS_ORIGINS'
         value: 'https://${frontendAppName}.${containerAppsEnv.outputs.defaultDomain}'
       }
@@ -146,7 +138,7 @@ module backendApp './modules/container-apps.bicep' = {
     secrets: [
       {
         name: 'database-connection-string'
-        value: 'postgresql://leadopsadmin:${postgresAdminPassword}@${postgres.outputs.fqdn}:5432/leadops?sslmode=require'
+        value: databaseUrl
       }
       {
         name: 'openai-api-key'
@@ -164,7 +156,7 @@ module backendApp './modules/container-apps.bicep' = {
   ]
 }
 
-// 6. Frontend Container App
+// 5. Frontend Container App
 module frontendApp './modules/container-apps.bicep' = {
   name: 'frontendApp-deployment'
   params: {
@@ -174,13 +166,17 @@ module frontendApp './modules/container-apps.bicep' = {
     containerImage: '${acr.properties.loginServer}/leadops-frontend:${frontendImageTag}'
     targetPort: 3000
     environment: environment
-    minReplicas: environment == 'prod' ? 2 : 1
+    minReplicas: environment == 'prod' ? 2 : 0
     maxReplicas: environment == 'prod' ? 10 : 3
     acrServer: acr.properties.loginServer
     environmentVariables: [
       {
         name: 'NEXT_PUBLIC_API_URL'
         value: 'https://${backendAppName}.${containerAppsEnv.outputs.defaultDomain}'
+      }
+      {
+        name: 'NEXT_PUBLIC_DEMO_MODE'
+        value: 'true'
       }
       {
         name: 'NODE_ENV'
@@ -195,5 +191,4 @@ module frontendApp './modules/container-apps.bicep' = {
 // Outputs
 output backendUrl string = 'https://${backendAppName}.${containerAppsEnv.outputs.defaultDomain}'
 output frontendUrl string = 'https://${frontendAppName}.${containerAppsEnv.outputs.defaultDomain}'
-output postgresServerFqdn string = postgres.outputs.fqdn
 output keyVaultName string = keyVault.outputs.name

@@ -6,10 +6,12 @@ import { getLeads, bulkRunPipeline } from '@/lib/api';
 
 interface ProcessLeadsButtonProps {
   onProcessingComplete?: () => void;
+  hasUnscoredLeads?: boolean;
 }
 
-export function ProcessLeadsButton({ onProcessingComplete }: ProcessLeadsButtonProps) {
+export function ProcessLeadsButton({ onProcessingComplete, hasUnscoredLeads = false }: ProcessLeadsButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processed, setProcessed] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,15 +41,16 @@ export function ProcessLeadsButton({ onProcessingComplete }: ProcessLeadsButtonP
         return;
       }
 
-      let processed = 0;
+      let done = 0;
       for (let i = 0; i < allNewLeadIds.length; i += 100) {
         const batch = allNewLeadIds.slice(i, i + 100);
-        setProgress(`Processing ${processed + 1}–${processed + batch.length} of ${allNewLeadIds.length}...`);
+        setProgress(`Processing ${done + 1}–${done + batch.length} of ${allNewLeadIds.length}...`);
         await bulkRunPipeline(batch);
-        processed += batch.length;
+        done += batch.length;
       }
 
-      setProgress(`Done! ${processed} leads processed. Refreshing...`);
+      setProgress(`Done! ${done} leads processed. Refreshing...`);
+      setProcessed(true);
       if (onProcessingComplete) {
         try {
           await onProcessingComplete();
@@ -64,6 +67,8 @@ export function ProcessLeadsButton({ onProcessingComplete }: ProcessLeadsButtonP
     }
   };
 
+  const shouldPulse = hasUnscoredLeads && !isProcessing && !processed;
+
   return (
     <div className="flex items-center gap-3">
       {progress && (
@@ -75,7 +80,7 @@ export function ProcessLeadsButton({ onProcessingComplete }: ProcessLeadsButtonP
       <button
         onClick={handleProcess}
         disabled={isProcessing}
-        className="btn-secondary flex items-center gap-2"
+        className={`btn-primary flex items-center gap-2 ${shouldPulse ? 'animate-pulse hover:animate-none' : ''}`}
       >
         {isProcessing ? (
           <>

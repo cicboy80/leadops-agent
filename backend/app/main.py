@@ -35,6 +35,13 @@ async def _no_response_check_loop() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     setup_logging()
+
+    # Auto-seed demo data in background if enabled and DB is empty
+    if settings.AUTO_SEED_DEMO:
+        from app.services.demo_seeder import seed_and_process_if_empty
+
+        asyncio.create_task(seed_and_process_if_empty())
+
     global _no_response_task
     _no_response_task = asyncio.create_task(_no_response_check_loop())
     yield

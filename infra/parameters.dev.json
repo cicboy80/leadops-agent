@@ -8,18 +8,18 @@
     "location": {
       "value": "westeurope"
     },
-    "postgresAdminPassword": {
+    "databaseUrl": {
       "reference": {
         "keyVault": {
-          "id": "/subscriptions/5684e867-a54a-43a3-b185-55f48ba6ee24/resourceGroups/hr-chatbot-rg/providers/Microsoft.KeyVault/vaults/leadops-secrets"
+          "id": "/subscriptions/5684e867-a54a-43a3-b185-55f48ba6ee24/resourceGroups/leadops-agent-rg/providers/Microsoft.KeyVault/vaults/leadops-secrets"
         },
-        "secretName": "postgres-admin-password"
+        "secretName": "database-url"
       }
     },
     "openaiApiKey": {
       "reference": {
         "keyVault": {
-          "id": "/subscriptions/5684e867-a54a-43a3-b185-55f48ba6ee24/resourceGroups/hr-chatbot-rg/providers/Microsoft.KeyVault/vaults/leadops-secrets"
+          "id": "/subscriptions/5684e867-a54a-43a3-b185-55f48ba6ee24/resourceGroups/leadops-agent-rg/providers/Microsoft.KeyVault/vaults/leadops-secrets"
         },
         "secretName": "openai-api-key"
       }
@@ -27,7 +27,7 @@
     "apiKey": {
       "reference": {
         "keyVault": {
-          "id": "/subscriptions/5684e867-a54a-43a3-b185-55f48ba6ee24/resourceGroups/hr-chatbot-rg/providers/Microsoft.KeyVault/vaults/leadops-secrets"
+          "id": "/subscriptions/5684e867-a54a-43a3-b185-55f48ba6ee24/resourceGroups/leadops-agent-rg/providers/Microsoft.KeyVault/vaults/leadops-secrets"
         },
         "secretName": "api-key"
       }

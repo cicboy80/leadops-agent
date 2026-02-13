@@ -85,7 +85,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
                 port: targetPort
                 scheme: 'HTTP'
               }
-              initialDelaySeconds: 30
+              initialDelaySeconds: 60
               periodSeconds: 10
               timeoutSeconds: 5
               failureThreshold: 3

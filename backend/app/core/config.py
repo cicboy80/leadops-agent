@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     # App
     LOG_LEVEL: str = "INFO"
     ENVIRONMENT: str = "development"
+    AUTO_SEED_DEMO: bool = False
 
     @property
     def cors_origins_list(self) -> list[str]:

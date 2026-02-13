@@ -17,6 +17,7 @@ COPY --from=base /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.
 COPY --from=base /usr/local/bin /usr/local/bin
 
 COPY backend/ .
+COPY data/demo_leads_curated.csv ./data/demo_leads_curated.csv
 
 EXPOSE 8000
 

@@ -111,16 +111,10 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                 </button>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-300">
-                Status
+                Pain Point
               </th>
-              <th className="px-6 py-3 text-left">
-                <button
-                  onClick={() => handleSort('created_at')}
-                  className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-                >
-                  Date
-                  <ArrowUpDown className="w-3 h-3" />
-                </button>
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-300">
+                Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-300">
                 Action
@@ -155,17 +149,15 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                     <span className="text-sm text-slate-400">-</span>
                   )}
                 </td>
+                <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 max-w-[200px]">
+                  {lead.pain_point
+                    ? lead.pain_point.length > 60
+                      ? `${lead.pain_point.slice(0, 60)}...`
+                      : lead.pain_point
+                    : '-'}
+                </td>
                 <td className="px-6 py-4">
                   {getStatusBadge(lead.status)}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                  {lead.created_at
-                    ? new Date(lead.created_at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })
-                    : '-'}
                 </td>
                 <td className="px-6 py-4">
                   <Link

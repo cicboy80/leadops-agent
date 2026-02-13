@@ -9,7 +9,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 SUBSCRIPTION_ID="5684e867-a54a-43a3-b185-55f48ba6ee24"
-RESOURCE_GROUP="hr-chatbot-rg"
+RESOURCE_GROUP="leadops-agent-rg"
 ACR_NAME="hrchatbotregistry"
 ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
 
@@ -41,18 +41,20 @@ az acr login --name "$ACR_NAME"
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 echo -e "${YELLOW}Project root: ${PROJECT_ROOT}${NC}"
 
-# Build and push backend image
+# Build and push backend image (context is project root for access to data/ directory)
 echo -e "${YELLOW}Building backend Docker image for amd64...${NC}"
-cd "$PROJECT_ROOT/backend"
+cd "$PROJECT_ROOT"
 docker buildx build --platform linux/amd64 \
+  -f Dockerfile.backend \
   -t "${ACR_LOGIN_SERVER}/leadops-backend:${ENVIRONMENT}-latest" \
   -t "${ACR_LOGIN_SERVER}/leadops-backend:${ENVIRONMENT}-$(git rev-parse --short HEAD 2>/dev/null || echo 'local')" \
   --push .
 
-# Build and push frontend image
+# Build and push frontend image (context is project root)
 echo -e "${YELLOW}Building frontend Docker image for amd64...${NC}"
-cd "$PROJECT_ROOT/frontend"
+cd "$PROJECT_ROOT"
 docker buildx build --platform linux/amd64 \
+  -f Dockerfile.frontend \
   -t "${ACR_LOGIN_SERVER}/leadops-frontend:${ENVIRONMENT}-latest" \
   -t "${ACR_LOGIN_SERVER}/leadops-frontend:${ENVIRONMENT}-$(git rev-parse --short HEAD 2>/dev/null || echo 'local')" \
   --push .

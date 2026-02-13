@@ -134,15 +134,20 @@ export function EmailEditor({ draft, onApprove, onReject }: EmailEditorProps) {
       )}
 
       {draft.sent_at && draft.delivery_status === 'SENT' && (
-        <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <div className="border-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-4">
           {!showReplyForm ? (
-            <button
-              onClick={() => setShowReplyForm(true)}
-              className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
-            >
-              <Reply className="w-4 h-4" />
-              Simulate Reply
-            </button>
+            <div className="space-y-2">
+              <p className="text-xs text-indigo-700 dark:text-indigo-300 font-medium">
+                Next step: Simulate a lead reply to see the AI classify the response and advance the outcome stage.
+              </p>
+              <button
+                onClick={() => setShowReplyForm(true)}
+                className="btn-primary flex items-center gap-2 text-sm"
+              >
+                <Reply className="w-4 h-4" />
+                Simulate Reply
+              </button>
+            </div>
           ) : (
             <div className="space-y-3">
               <label htmlFor="reply-text" className="label mb-1 block text-sm">

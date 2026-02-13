@@ -6,6 +6,8 @@ import { Upload, Play, Info } from 'lucide-react';
 import { CsvUploadForm } from '@/components/upload/csv-upload-form';
 import { getLeads, bulkRunPipeline } from '@/lib/api';
 
+const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+
 export default function UploadPage() {
   const router = useRouter();
   const [uploadedCount, setUploadedCount] = useState<number | null>(null);
@@ -81,7 +83,20 @@ export default function UploadPage() {
         </p>
       </div>
 
-      <div className="card p-6">
+      {IS_DEMO && (
+        <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-amber-900 dark:text-amber-100">
+            <p className="font-medium mb-1">Demo Instance</p>
+            <p className="text-amber-800 dark:text-amber-200">
+              CSV upload is disabled in this demo, but is fully functional in production.
+              Explore the pre-loaded leads on the <a href="/" className="underline font-medium">Dashboard</a> to see the full pipeline in action.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className={`card p-6 ${IS_DEMO ? 'opacity-50 pointer-events-none' : ''}`}>
         <div className="flex items-start gap-3 mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
           <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-blue-900 dark:text-blue-100">

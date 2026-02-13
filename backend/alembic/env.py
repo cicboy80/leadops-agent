@@ -1,4 +1,5 @@
 import asyncio
+import ssl as _ssl
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -92,12 +93,28 @@ async def run_async_migrations() -> None:
     """
     # Use the async URL directly for async engine
     configuration = config.get_section(config.config_ini_section, {})
-    configuration["sqlalchemy.url"] = settings.DATABASE_URL
+    db_url = settings.DATABASE_URL
+    connect_args = {}
+
+    # asyncpg doesn't understand sslmode=require; strip it and pass ssl context
+    if "sslmode=require" in db_url:
+        db_url = db_url.replace("?sslmode=require", "").replace("&sslmode=require", "")
+        try:
+            import certifi
+            ssl_ctx = _ssl.create_default_context(cafile=certifi.where())
+        except ImportError:
+            ssl_ctx = _ssl.create_default_context()
+            ssl_ctx.check_hostname = False
+            ssl_ctx.verify_mode = _ssl.CERT_NONE
+        connect_args["ssl"] = ssl_ctx
+
+    configuration["sqlalchemy.url"] = db_url
 
     connectable = async_engine_from_config(
         configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args=connect_args,
     )
 
     async with connectable.connect() as connection:
