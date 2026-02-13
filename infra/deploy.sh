@@ -59,6 +59,11 @@ docker buildx build --platform linux/amd64 \
   -t "${ACR_LOGIN_SERVER}/leadops-frontend:${ENVIRONMENT}-$(git rev-parse --short HEAD 2>/dev/null || echo 'local')" \
   --push .
 
+# Get ACR admin credentials for container app image pulls
+echo -e "${YELLOW}Fetching ACR admin credentials...${NC}"
+ACR_USERNAME=$(az acr credential show --name "$ACR_NAME" --query username -o tsv)
+ACR_PASSWORD=$(az acr credential show --name "$ACR_NAME" --query "passwords[0].value" -o tsv)
+
 # Deploy Bicep infrastructure
 echo -e "${YELLOW}Deploying Azure infrastructure with Bicep...${NC}"
 cd "$PROJECT_ROOT/infra"
@@ -70,6 +75,7 @@ az deployment group create \
   --resource-group "$RESOURCE_GROUP" \
   --template-file main.bicep \
   --parameters "parameters.${ENVIRONMENT}.json" \
+  --parameters acrUsername="$ACR_USERNAME" acrPassword="$ACR_PASSWORD" \
   --query 'properties.outputs' \
   --output json > deployment-outputs.json
 
@@ -83,55 +89,11 @@ FRONTEND_URL=$(jq -r '.frontendUrl.value' deployment-outputs.json)
 
 echo -e "${YELLOW}Backend App Name: ${BACKEND_APP_NAME}${NC}"
 
-# Grant ACR pull permissions to container apps
-echo -e "${YELLOW}Granting ACR pull permissions to container apps...${NC}"
-
-# Get backend app principal ID
-BACKEND_PRINCIPAL_ID=$(az containerapp show \
-  --name "$BACKEND_APP_NAME" \
-  --resource-group "$RESOURCE_GROUP" \
-  --query 'identity.principalId' \
-  --output tsv)
-
-# Get frontend app principal ID
-FRONTEND_APP_NAME="leadops-frontend-${ENVIRONMENT}"
-FRONTEND_PRINCIPAL_ID=$(az containerapp show \
-  --name "$FRONTEND_APP_NAME" \
-  --resource-group "$RESOURCE_GROUP" \
-  --query 'identity.principalId' \
-  --output tsv)
-
-# Get ACR resource ID
-ACR_ID=$(az acr show --name "$ACR_NAME" --query id --output tsv)
-
-# Assign AcrPull role to backend
-az role assignment create \
-  --assignee "$BACKEND_PRINCIPAL_ID" \
-  --role "AcrPull" \
-  --scope "$ACR_ID" || echo "Backend role assignment may already exist"
-
-# Assign AcrPull role to frontend
-az role assignment create \
-  --assignee "$FRONTEND_PRINCIPAL_ID" \
-  --role "AcrPull" \
-  --scope "$ACR_ID" || echo "Frontend role assignment may already exist"
-
-# Run database migrations
-echo -e "${YELLOW}Running Alembic database migrations...${NC}"
-
-# Build migration command
-MIGRATION_COMMAND="cd /app && alembic upgrade head"
-
-# Execute migration in backend container
-az containerapp exec \
-  --name "$BACKEND_APP_NAME" \
-  --resource-group "$RESOURCE_GROUP" \
-  --command "/bin/bash" \
-  --args "-c \"$MIGRATION_COMMAND\"" || {
-    echo -e "${YELLOW}Warning: Migration command failed or container exec not available${NC}"
-    echo -e "${YELLOW}You may need to run migrations manually:${NC}"
-    echo "  az containerapp exec --name $BACKEND_APP_NAME --resource-group $RESOURCE_GROUP --command \"/bin/bash\" --args \"-c 'cd /app && alembic upgrade head'\""
-  }
+# Note: Migrations already applied to Neon DB locally.
+# For fresh deployments, run manually:
+#   az containerapp exec --name $BACKEND_APP_NAME --resource-group $RESOURCE_GROUP \
+#     --command "/bin/bash" --args "-c 'cd /app && alembic upgrade head'"
+echo -e "${YELLOW}Skipping migrations (already applied to Neon). Run manually if needed.${NC}"
 
 echo -e "${GREEN}===============================================${NC}"
 echo -e "${GREEN}Deployment completed successfully!${NC}"

@@ -6,6 +6,10 @@ COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 
 COPY frontend/ .
+RUN mkdir -p public
+
+ARG NEXT_PUBLIC_DEMO_MODE=true
+ENV NEXT_PUBLIC_DEMO_MODE=$NEXT_PUBLIC_DEMO_MODE
 
 RUN npm run build
 
@@ -17,9 +21,9 @@ COPY --from=base /app/.next/standalone ./
 COPY --from=base /app/.next/static ./.next/static
 COPY --from=base /app/public ./public
 
-EXPOSE 3000
+EXPOSE 3004
 
 ENV HOSTNAME="0.0.0.0"
-ENV PORT=3000
+ENV PORT=3004
 
 CMD ["node", "server.js"]

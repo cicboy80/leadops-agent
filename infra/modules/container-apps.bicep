@@ -31,6 +31,13 @@ param memory string = '1Gi'
 @description('ACR server')
 param acrServer string
 
+@description('ACR admin username')
+param acrUsername string = ''
+
+@description('ACR admin password')
+@secure()
+param acrPassword string = ''
+
 @description('Environment variables')
 param environmentVariables array = []
 
@@ -62,10 +69,16 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
       registries: [
         {
           server: acrServer
-          identity: 'system'
+          username: acrUsername
+          passwordSecretRef: 'acr-password'
         }
       ]
-      secrets: secrets
+      secrets: concat(secrets, [
+        {
+          name: 'acr-password'
+          value: acrPassword
+        }
+      ])
     }
     template: {
       containers: [

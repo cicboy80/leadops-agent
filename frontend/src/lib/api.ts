@@ -16,8 +16,22 @@ import type {
   Notification,
 } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'dev-api-key-change-me';
+// Server-side (SSR): call backend directly via BACKEND_URL (runtime env)
+// Client-side (browser): call /api/v1 which Next.js API route proxies to backend
+function getApiUrl(): string {
+  if (typeof window === 'undefined') {
+    return `${process.env.BACKEND_URL || 'http://localhost:8000'}/api/v1`;
+  }
+  return '/api/v1';
+}
+
+// Server-side: use real API key. Client-side: proxy injects it server-side
+function getApiKey(): string {
+  if (typeof window === 'undefined') {
+    return process.env.API_KEY || 'dev-api-key-change-me';
+  }
+  return 'proxied'; // placeholder — proxy route injects the real key
+}
 
 class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -27,13 +41,13 @@ class ApiError extends Error {
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const url = `${API_URL}${path}`;
+  const url = `${getApiUrl()}${path}`;
 
   const response = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      'X-API-Key': API_KEY,
+      'X-API-Key': getApiKey(),
       ...options?.headers,
     },
   });
@@ -82,10 +96,10 @@ export async function uploadCSV(file: File): Promise<UploadResponse> {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${API_URL}/leads/upload`, {
+  const response = await fetch(`${getApiUrl()}/leads/upload`, {
     method: 'POST',
     headers: {
-      'X-API-Key': API_KEY,
+      'X-API-Key': getApiKey(),
     },
     body: formData,
   });

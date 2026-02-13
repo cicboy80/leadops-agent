@@ -22,8 +22,15 @@ param openaiApiKey string
 @secure()
 param apiKey string
 
-@description('ACR name (existing)')
-param acrName string = 'hrchatbotregistry'
+@description('ACR login server (existing, may be in a different resource group)')
+param acrLoginServer string = 'hrchatbotregistry.azurecr.io'
+
+@description('ACR admin username')
+param acrUsername string = ''
+
+@description('ACR admin password')
+@secure()
+param acrPassword string = ''
 
 @description('Backend container image tag')
 param backendImageTag string = 'latest'
@@ -39,12 +46,6 @@ var containerAppsEnvName = '${projectName}-env-${environment}-${uniqueSuffix}'
 var keyVaultName = '${projectName}-kv-${environment}-${substring(uniqueSuffix, 0, 5)}'
 var backendAppName = '${projectName}-backend-${environment}'
 var frontendAppName = '${projectName}-frontend-${environment}'
-
-// Reference existing ACR
-resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
-  name: acrName
-  scope: resourceGroup()
-}
 
 // 1. Log Analytics Workspace
 module logAnalytics './modules/log-analytics.bicep' = {
@@ -99,12 +100,14 @@ module backendApp './modules/container-apps.bicep' = {
     name: backendAppName
     location: location
     containerAppsEnvironmentId: containerAppsEnv.outputs.environmentId
-    containerImage: '${acr.properties.loginServer}/leadops-backend:${backendImageTag}'
+    containerImage: '${acrLoginServer}/leadops-backend:${backendImageTag}'
     targetPort: 8000
     environment: environment
     minReplicas: environment == 'prod' ? 2 : 0
     maxReplicas: environment == 'prod' ? 10 : 3
-    acrServer: acr.properties.loginServer
+    acrServer: acrLoginServer
+    acrUsername: acrUsername
+    acrPassword: acrPassword
     environmentVariables: [
       {
         name: 'ENVIRONMENT'
@@ -163,27 +166,34 @@ module frontendApp './modules/container-apps.bicep' = {
     name: frontendAppName
     location: location
     containerAppsEnvironmentId: containerAppsEnv.outputs.environmentId
-    containerImage: '${acr.properties.loginServer}/leadops-frontend:${frontendImageTag}'
-    targetPort: 3000
+    containerImage: '${acrLoginServer}/leadops-frontend:${frontendImageTag}'
+    targetPort: 3004
     environment: environment
     minReplicas: environment == 'prod' ? 2 : 0
     maxReplicas: environment == 'prod' ? 10 : 3
-    acrServer: acr.properties.loginServer
+    acrServer: acrLoginServer
+    acrUsername: acrUsername
+    acrPassword: acrPassword
     environmentVariables: [
       {
-        name: 'NEXT_PUBLIC_API_URL'
+        name: 'BACKEND_URL'
         value: 'https://${backendAppName}.${containerAppsEnv.outputs.defaultDomain}'
       }
       {
-        name: 'NEXT_PUBLIC_DEMO_MODE'
-        value: 'true'
+        name: 'API_KEY'
+        secretRef: 'api-key'
       }
       {
         name: 'NODE_ENV'
         value: 'production'
       }
     ]
-    secrets: []
+    secrets: [
+      {
+        name: 'api-key'
+        value: apiKey
+      }
+    ]
     healthProbePath: null
   }
 }
