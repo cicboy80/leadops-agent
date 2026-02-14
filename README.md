@@ -16,10 +16,10 @@ B2B agentic workflow system for automated lead intake, qualification, follow-up 
 
 - **Backend**: Python FastAPI + SQLAlchemy 2.0 async
 - **Orchestration**: LangGraph state machine with PostgreSQL checkpointing
-- **Database**: PostgreSQL 16
+- **Database**: Neon PostgreSQL 17 (free tier, scale-to-zero)
 - **Frontend**: Next.js 14 App Router + Tailwind CSS
 - **LLM**: OpenAI (gpt-4o-mini for scoring/decisions, gpt-4o for email drafting)
-- **Deployment**: Azure Container Apps via Bicep IaC
+- **Deployment**: Azure Container Apps (scale-to-zero) via Bicep IaC
 
 ## Quick Start
 
@@ -56,8 +56,9 @@ make seed
 
 ### Access
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
+- **Live Demo**: https://leadops-frontend-dev.greenstone-4f556952.westeurope.azurecontainerapps.io
+- **Frontend (local)**: http://localhost:3004
+- **Backend API (local)**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
 
 ## API Endpoints
@@ -108,10 +109,11 @@ make migrate    # Run DB migrations
 
 ## Deployment
 
-See [AZURE_DEPLOYMENT.md](AZURE_DEPLOYMENT.md) for Azure Container Apps deployment guide.
+Deploy to Azure Container Apps:
 
 ```bash
-make deploy     # Build, push, and deploy to Azure
+bash infra/deploy.sh dev    # Build, push, and deploy to Azure (dev)
+bash infra/deploy.sh prod   # Production deployment
 ```
 
 ## Project Structure
