@@ -43,3 +43,4 @@ infra/deployment-outputs.json
 
 # Claude
 .claude/
+claude_prompt.md
