@@ -2,6 +2,12 @@
 
 B2B agentic workflow system for automated lead intake, qualification, follow-up generation, and CRM-style activity logging.
 
+## Why this exists
+
+LeadOps Agent is designed to demonstrate how agentic AI systems can be used to automate real B2B workflows while remaining controllable, auditable, and production-safe.
+
+Rather than relying on prompt-only automation, the system uses a state-driven pipeline with explicit decision points, deterministic fallbacks, and human-in-the-loop approval to ensure reliability in business-critical flows such as lead qualification and outbound communication.
+
 ## What It Does
 
 1. **Ingests leads** via CSV upload or manual entry
@@ -10,7 +16,7 @@ B2B agentic workflow system for automated lead intake, qualification, follow-up 
 4. **Decides** next action: send email, ask clarifying question, disqualify, or hold
 5. **Drafts emails** using LLM with approve/edit/send workflow in UI
 6. **Logs activities** to a CRM-style timeline per lead
-7. **Learns** from outcome feedback by adjusting scoring weights
+7. **Incorporates** outcome feedback by adjusting scoring weights
 
 ## Architecture
 
@@ -21,7 +27,7 @@ B2B agentic workflow system for automated lead intake, qualification, follow-up 
 - **LLM**: OpenAI (gpt-4o-mini for scoring/decisions, gpt-4o for email drafting)
 - **Deployment**: Azure Container Apps (scale-to-zero) via Bicep IaC
 
-## Quick Start
+## Local Development & Demo Setup
 
 ### Prerequisites
 
