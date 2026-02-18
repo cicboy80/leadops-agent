@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
@@ -20,6 +21,14 @@ async function proxyRequest(req: NextRequest, params: { path: string[] }) {
   // Inject API key server-side so it never reaches the browser
   const apiKey = process.env.API_KEY || 'dev-api-key-change-me';
   headers.set('X-API-Key', apiKey);
+
+  // Demo session: read existing cookie or generate new UUID
+  let sessionId = req.cookies.get('demo-session')?.value;
+  const isNewSession = !sessionId;
+  if (!sessionId) {
+    sessionId = randomUUID();
+  }
+  headers.set('X-Demo-Session', sessionId);
 
   const fetchOptions: RequestInit = {
     method: req.method,
@@ -46,11 +55,23 @@ async function proxyRequest(req: NextRequest, params: { path: string[] }) {
     responseHeaders.set(key, value);
   }
 
-  return new NextResponse(response.body, {
+  const nextResponse = new NextResponse(response.body, {
     status: response.status,
     statusText: response.statusText,
     headers: responseHeaders,
   });
+
+  // Set cookie if new session (httpOnly, SameSite=Lax, 24h expiry)
+  if (isNewSession) {
+    nextResponse.cookies.set('demo-session', sessionId, {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 86400,
+      path: '/',
+    });
+  }
+
+  return nextResponse;
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {

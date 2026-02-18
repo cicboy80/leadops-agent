@@ -14,12 +14,14 @@ class NotificationRepository(BaseRepository[Notification]):
     def __init__(self, session: AsyncSession):
         super().__init__(session, Notification)
 
-    async def get_unread(self) -> list[Notification]:
+    async def get_unread(self, demo_session_id: str | None = None) -> list[Notification]:
         stmt = (
             select(Notification)
             .where(Notification.read_at.is_(None))
             .order_by(Notification.created_at.desc())
         )
+        if demo_session_id:
+            stmt = stmt.where(Notification.demo_session_id == demo_session_id)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
@@ -31,13 +33,15 @@ class NotificationRepository(BaseRepository[Notification]):
         await self.session.flush()
         return record
 
-    async def mark_all_read(self) -> int:
+    async def mark_all_read(self, demo_session_id: str | None = None) -> int:
         now = datetime.now(timezone.utc)
         stmt = (
             update(Notification)
             .where(Notification.read_at.is_(None))
-            .values(read_at=now)
         )
+        if demo_session_id:
+            stmt = stmt.where(Notification.demo_session_id == demo_session_id)
+        stmt = stmt.values(read_at=now)
         result = await self.session.execute(stmt)
         await self.session.flush()
         return result.rowcount

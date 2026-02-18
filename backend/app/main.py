@@ -36,11 +36,12 @@ async def _no_response_check_loop() -> None:
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     setup_logging()
 
-    # Auto-seed demo data in background if enabled and DB is empty
+    # Demo mode: clean up stale sessions and ensure admin/config exist
     if settings.AUTO_SEED_DEMO:
-        from app.services.demo_seeder import seed_and_process_if_empty
+        from app.services.demo_seeder import cleanup_old_sessions, ensure_admin_and_config
 
-        asyncio.create_task(seed_and_process_if_empty())
+        await cleanup_old_sessions()
+        await ensure_admin_and_config()
 
     global _no_response_task
     _no_response_task = asyncio.create_task(_no_response_check_loop())

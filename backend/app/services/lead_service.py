@@ -103,7 +103,7 @@ class LeadService:
         logger.info("Lead status updated", lead_id=str(id), new_status=status.value)
         return lead
 
-    async def bulk_create_from_csv(self, rows: list[dict]) -> CSVUploadResponse:
+    async def bulk_create_from_csv(self, rows: list[dict], demo_session_id: str | None = None) -> CSVUploadResponse:
         """
         Bulk create leads from CSV rows.
         Validates each row, sanitizes injection chars (strip leading =+-@),
@@ -151,7 +151,10 @@ class LeadService:
                     lead_message=sanitized_row.get("lead_message"),
                 )
 
-                await self.create_lead(lead_data)
+                lead = await self.create_lead(lead_data)
+                if demo_session_id:
+                    lead.demo_session_id = demo_session_id
+                    await self.session.flush()
                 created_count += 1
 
             except Exception as e:

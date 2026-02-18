@@ -27,6 +27,7 @@ class Lead(Base):
         Index("ix_leads_score_label", "score_label"),
         Index("ix_leads_created_at", "created_at"),
         Index("ix_leads_current_outcome_stage", "current_outcome_stage"),
+        Index("ix_leads_demo_session_id", "demo_session_id"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
@@ -68,6 +69,9 @@ class Lead(Base):
     # Outcome stage tracking
     current_outcome_stage: Mapped[str | None] = mapped_column(String(30))
     outcome_stage_entered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    # Demo session isolation
+    demo_session_id: Mapped[str | None] = mapped_column(String(36))
 
     # Relationships
     activities: Mapped[list["ActivityLog"]] = relationship(back_populates="lead", lazy="selectin")
@@ -252,3 +256,4 @@ class Notification(Base):
     metadata_json: Mapped[dict | None] = mapped_column(JSON)
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    demo_session_id: Mapped[str | None] = mapped_column(String(36))

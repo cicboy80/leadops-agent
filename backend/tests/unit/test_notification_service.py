@@ -157,7 +157,7 @@ async def test_get_all_includes_read(notification_service, mock_notification_rep
 
     result = await notification_service.get_all(unread_only=False)
 
-    mock_notification_repo.list.assert_called_once_with(limit=100)
+    mock_notification_repo.list.assert_called_once_with(filters={}, limit=100)
     assert len(result) == 2
 
 

@@ -1,8 +1,9 @@
 """Dependency injection functions for API routes."""
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.services.calendar_service import CalendarService
@@ -19,6 +20,8 @@ from app.services.trace_service import TraceService
 __all__ = [
     "get_db",
     "get_current_user",
+    "get_demo_session",
+    "ensure_demo_leads",
     "get_lead_service",
     "get_pipeline_service",
     "get_draft_service",
@@ -29,6 +32,26 @@ __all__ = [
     "get_notification_service",
     "get_calendar_service",
 ]
+
+
+def get_demo_session(request: Request) -> str | None:
+    """Read X-Demo-Session header; returns None when not in demo mode."""
+    if not settings.AUTO_SEED_DEMO:
+        return None
+    return request.headers.get("X-Demo-Session")
+
+
+async def ensure_demo_leads(
+    demo_session_id: str | None = Depends(get_demo_session),
+    db: AsyncSession = Depends(get_db),
+) -> str | None:
+    """Ensure demo leads exist for this session. Returns session_id."""
+    if demo_session_id is None:
+        return None
+    from app.services.demo_seeder import seed_for_session
+
+    await seed_for_session(demo_session_id, db)
+    return demo_session_id
 
 
 def get_lead_service(db: AsyncSession = Depends(get_db)) -> LeadService:

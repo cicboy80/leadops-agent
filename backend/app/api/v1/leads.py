@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import (
+    ensure_demo_leads,
     get_current_user,
     get_lead_service,
     get_outcome_service,
@@ -54,9 +55,13 @@ async def create_lead(
     lead: LeadCreate,
     user: str = Depends(get_current_user),
     lead_service: LeadService = Depends(get_lead_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> LeadResponse:
     """Create a new lead manually."""
     result = await lead_service.create_lead(lead)
+    if demo_session_id:
+        result.demo_session_id = demo_session_id
+        await lead_service.session.flush()
     return LeadResponse.model_validate(result)
 
 
@@ -65,6 +70,7 @@ async def upload_leads_csv(
     file: UploadFile = File(...),
     user: str = Depends(get_current_user),
     lead_service: LeadService = Depends(get_lead_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> CSVUploadResponse:
     """Upload and parse a CSV file of leads.
 
@@ -119,7 +125,7 @@ async def upload_leads_csv(
             detail="Maximum 1000 rows per upload",
         )
 
-    result = await lead_service.bulk_create_from_csv(rows)
+    result = await lead_service.bulk_create_from_csv(rows, demo_session_id=demo_session_id)
     # Merge pre-parse errors with service errors
     result.errors = errors + result.errors
     return result
@@ -135,9 +141,12 @@ async def list_leads(
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     user: str = Depends(get_current_user),
     lead_service: LeadService = Depends(get_lead_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> LeadListResponse:
     """List leads with optional filtering and cursor-based pagination."""
-    filters = {}
+    filters: dict = {}
+    if demo_session_id:
+        filters["demo_session_id"] = demo_session_id
     if lead_status:
         filters["status"] = lead_status.value
     if score_label:
@@ -172,10 +181,13 @@ async def get_lead(
     lead_id: uuid.UUID,
     user: str = Depends(get_current_user),
     lead_service: LeadService = Depends(get_lead_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> LeadResponse:
     """Get a single lead by ID."""
     lead = await lead_service.get_lead(lead_id)
     if lead is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lead not found")
+    if demo_session_id and lead.demo_session_id != demo_session_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lead not found")
     return LeadResponse.model_validate(lead)
 
@@ -185,6 +197,7 @@ async def run_pipeline_for_lead(
     lead_id: uuid.UUID,
     user: str = Depends(get_current_user),
     pipeline_service: PipelineService = Depends(get_pipeline_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> PipelineRunResponse:
     """Trigger the agentic pipeline for a specific lead.
 
@@ -203,6 +216,7 @@ async def update_lead_status(
     status_update: dict,
     user: str = Depends(get_current_user),
     lead_service: LeadService = Depends(get_lead_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> LeadResponse:
     """Update lead status."""
     new_status = status_update.get("status")
@@ -225,6 +239,7 @@ async def submit_feedback(
     feedback: FeedbackCreate,
     user: str = Depends(get_current_user),
     lead_service: LeadService = Depends(get_lead_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> FeedbackResponse:
     """Submit outcome feedback for a lead.
 
@@ -262,6 +277,7 @@ async def get_outcome_stages(
     lead_id: uuid.UUID,
     user: str = Depends(get_current_user),
     outcome_service: OutcomeService = Depends(get_outcome_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> OutcomeStageListResponse:
     """Get the full outcome stage history timeline for a lead."""
     try:
@@ -284,6 +300,7 @@ async def transition_outcome_stage(
     body: OutcomeStageTransitionRequest,
     user: str = Depends(get_current_user),
     outcome_service: OutcomeService = Depends(get_outcome_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> OutcomeStageResponse:
     """Manually transition a lead to a new outcome stage."""
     try:
@@ -309,6 +326,7 @@ async def inbound_reply(
     body: InboundReplyRequest,
     user: str = Depends(get_current_user),
     outcome_service: OutcomeService = Depends(get_outcome_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> InboundReplyResponse:
     """Handle a simulated inbound email reply with LLM classification.
 
@@ -347,6 +365,7 @@ async def get_classifications(
     lead_id: uuid.UUID,
     user: str = Depends(get_current_user),
     classification_service: ReplyClassificationService = Depends(get_reply_classification_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> ReplyClassificationListResponse:
     """Get reply classification history for a lead."""
     records = await classification_service.get_all_classifications(lead_id)
@@ -366,6 +385,7 @@ async def override_classification(
     body: ClassificationOverrideRequest,
     user: str = Depends(get_current_user),
     classification_service: ReplyClassificationService = Depends(get_reply_classification_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> ReplyClassificationResponse:
     """Override a reply classification with a manual correction."""
     try:
@@ -384,6 +404,7 @@ async def get_next_stages(
     lead_id: uuid.UUID,
     user: str = Depends(get_current_user),
     outcome_service: OutcomeService = Depends(get_outcome_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
 ) -> NextStagesResponse:
     """Get valid next outcome stages for a lead."""
     try:
@@ -398,6 +419,8 @@ async def bulk_run_pipeline(
     lead_ids: list[uuid.UUID],
     user: str = Depends(get_current_user),
     pipeline_service: PipelineService = Depends(get_pipeline_service),
+    demo_session_id: str | None = Depends(ensure_demo_leads),
+    lead_service: LeadService = Depends(get_lead_service),
 ) -> dict:
     """Trigger the agentic pipeline for multiple leads.
 
@@ -408,6 +431,16 @@ async def bulk_run_pipeline(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Maximum 100 leads per bulk run request",
         )
+
+    # Verify session ownership when in demo mode
+    if demo_session_id:
+        for lid in lead_ids:
+            lead = await lead_service.get_lead(lid)
+            if lead is None or lead.demo_session_id != demo_session_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Lead {lid} does not belong to this demo session",
+                )
 
     results = []
     errors = []

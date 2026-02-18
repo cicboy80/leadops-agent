@@ -22,6 +22,7 @@ class NotificationService:
         classification: str,
         reply_preview: str,
         lead_name: str = "",
+        demo_session_id: str | None = None,
     ) -> Notification:
         title = f"Reply classified: {classification}"
         body = f"Lead {lead_name} replied. Classification: {classification}. Preview: {reply_preview[:200]}"
@@ -32,6 +33,7 @@ class NotificationService:
             title=title,
             body=body,
             metadata_json={"classification": classification},
+            demo_session_id=demo_session_id,
         )
 
     async def notify_demo_requested(
@@ -40,6 +42,7 @@ class NotificationService:
         scheduling_link: str | None,
         extracted_dates: list[str],
         lead_name: str = "",
+        demo_session_id: str | None = None,
     ) -> Notification:
         title = f"Demo requested by {lead_name}" if lead_name else "Demo requested"
         body_parts = [f"Lead {lead_name} wants to book a demo."]
@@ -58,19 +61,23 @@ class NotificationService:
                 "extracted_dates": extracted_dates,
                 "priority": "high",
             },
+            demo_session_id=demo_session_id,
         )
 
-    async def get_unread(self) -> list[Notification]:
-        return await self.repo.get_unread()
+    async def get_unread(self, demo_session_id: str | None = None) -> list[Notification]:
+        return await self.repo.get_unread(demo_session_id=demo_session_id)
 
-    async def get_all(self, unread_only: bool = False) -> list[Notification]:
+    async def get_all(self, unread_only: bool = False, demo_session_id: str | None = None) -> list[Notification]:
         if unread_only:
-            return await self.repo.get_unread()
-        items, _ = await self.repo.list(limit=100)
+            return await self.repo.get_unread(demo_session_id=demo_session_id)
+        filters = {}
+        if demo_session_id:
+            filters["demo_session_id"] = demo_session_id
+        items, _ = await self.repo.list(filters=filters, limit=100)
         return items
 
     async def mark_read(self, notification_id: uuid.UUID) -> Notification:
         return await self.repo.mark_read(notification_id)
 
-    async def mark_all_read(self) -> int:
-        return await self.repo.mark_all_read()
+    async def mark_all_read(self, demo_session_id: str | None = None) -> int:
+        return await self.repo.mark_all_read(demo_session_id=demo_session_id)

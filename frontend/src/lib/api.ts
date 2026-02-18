@@ -33,6 +33,24 @@ function getApiKey(): string {
   return 'proxied'; // placeholder — proxy route injects the real key
 }
 
+// Server-side: read demo-session cookie for SSR requests to backend
+function getDemoSessionHeader(): Record<string, string> {
+  if (typeof window === 'undefined') {
+    try {
+      // Dynamic import inside try — next/headers only works in server components
+      const { cookies } = require('next/headers');
+      const cookieStore = cookies();
+      const sessionId = cookieStore.get('demo-session')?.value;
+      if (sessionId) {
+        return { 'X-Demo-Session': sessionId };
+      }
+    } catch {
+      // Not in a server component context — skip
+    }
+  }
+  return {};
+}
+
 class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
@@ -48,6 +66,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
     headers: {
       'Content-Type': 'application/json',
       'X-API-Key': getApiKey(),
+      ...getDemoSessionHeader(),
       ...options?.headers,
     },
   });
@@ -100,6 +119,7 @@ export async function uploadCSV(file: File): Promise<UploadResponse> {
     method: 'POST',
     headers: {
       'X-API-Key': getApiKey(),
+      ...getDemoSessionHeader(),
     },
     body: formData,
   });
