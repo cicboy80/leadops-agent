@@ -5,6 +5,7 @@ Each visitor gets their own set of 6 unscored leads tagged with a unique
 demo_session_id. Old sessions (>24h) are cleaned up on startup.
 """
 
+import asyncio
 import csv
 import hashlib
 import logging
@@ -42,6 +43,8 @@ CSV_PATH = (
 
 # In-memory set of session IDs that have been seeded (avoids DB round-trip per request)
 _seeded_sessions: set[str] = set()
+# Per-session locks to prevent concurrent double-seeding
+_seed_locks: dict[str, asyncio.Lock] = {}
 
 
 async def cleanup_old_sessions() -> None:
@@ -86,48 +89,56 @@ async def seed_for_session(session_id: str, db: AsyncSession) -> None:
     if session_id in _seeded_sessions:
         return
 
-    # DB fallback: check if leads already exist for this session
-    result = await db.execute(
-        select(func.count()).select_from(Lead).where(Lead.demo_session_id == session_id)
-    )
-    if result.scalar_one() > 0:
+    # Per-session lock prevents concurrent requests from double-seeding
+    if session_id not in _seed_locks:
+        _seed_locks[session_id] = asyncio.Lock()
+    async with _seed_locks[session_id]:
+        # Re-check after acquiring lock (another request may have seeded)
+        if session_id in _seeded_sessions:
+            return
+
+        # DB fallback: check if leads already exist for this session
+        result = await db.execute(
+            select(func.count()).select_from(Lead).where(Lead.demo_session_id == session_id)
+        )
+        if result.scalar_one() > 0:
+            _seeded_sessions.add(session_id)
+            return
+
+        if not CSV_PATH.exists():
+            logger.error("Curated CSV not found at %s", CSV_PATH)
+            return
+
+        lead_count = 0
+        with open(CSV_PATH, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if not row.get("email") or not row.get("first_name"):
+                    continue
+                lead = Lead(
+                    first_name=row["first_name"][:100],
+                    last_name=row["last_name"][:100],
+                    email=row["email"][:255],
+                    phone=row.get("phone", "")[:50] or None,
+                    company_name=row.get("company_name", "")[:200] or "Unknown",
+                    job_title=row.get("job_title", "")[:100] or None,
+                    industry=row.get("industry", "")[:100] or None,
+                    company_size=row.get("company_size", "")[:50] or None,
+                    country=row.get("country", "")[:100] or None,
+                    source=row.get("source", "")[:100] or None,
+                    budget_range=row.get("budget_range", "")[:50] or None,
+                    pain_point=row.get("pain_point", "")[:500] or None,
+                    urgency=row.get("urgency", "")[:20] or None,
+                    lead_message=row.get("lead_message", "")[:2000] or None,
+                    status="NEW",
+                    demo_session_id=session_id,
+                )
+                db.add(lead)
+                lead_count += 1
+
+        await db.flush()
         _seeded_sessions.add(session_id)
-        return
-
-    if not CSV_PATH.exists():
-        logger.error("Curated CSV not found at %s", CSV_PATH)
-        return
-
-    lead_count = 0
-    with open(CSV_PATH, "r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if not row.get("email") or not row.get("first_name"):
-                continue
-            lead = Lead(
-                first_name=row["first_name"][:100],
-                last_name=row["last_name"][:100],
-                email=row["email"][:255],
-                phone=row.get("phone", "")[:50] or None,
-                company_name=row.get("company_name", "")[:200] or "Unknown",
-                job_title=row.get("job_title", "")[:100] or None,
-                industry=row.get("industry", "")[:100] or None,
-                company_size=row.get("company_size", "")[:50] or None,
-                country=row.get("country", "")[:100] or None,
-                source=row.get("source", "")[:100] or None,
-                budget_range=row.get("budget_range", "")[:50] or None,
-                pain_point=row.get("pain_point", "")[:500] or None,
-                urgency=row.get("urgency", "")[:20] or None,
-                lead_message=row.get("lead_message", "")[:2000] or None,
-                status="NEW",
-                demo_session_id=session_id,
-            )
-            db.add(lead)
-            lead_count += 1
-
-    await db.flush()
-    _seeded_sessions.add(session_id)
-    logger.info("Seeded %d leads for demo session %s", lead_count, session_id[:8])
+        logger.info("Seeded %d leads for demo session %s", lead_count, session_id[:8])
 
 
 async def ensure_admin_and_config() -> None:
