@@ -18,6 +18,12 @@ Rather than relying on prompt-only automation, the system uses a state-driven pi
 6. **Logs activities** to a CRM-style timeline per lead
 7. **Incorporates** outcome feedback by adjusting scoring weights
 
+## Live Demo
+
+**https://leadops-frontend-dev.greenstone-4f556952.westeurope.azurecontainerapps.io**
+
+Each visitor gets their own isolated set of 6 unscored demo leads — processing leads in one browser won't affect another visitor. Try clicking "Process Unscored Leads" to run the full pipeline, then open an incognito window to verify you get a separate fresh set.
+
 ## Architecture
 
 - **Backend**: Python FastAPI + SQLAlchemy 2.0 async
@@ -26,6 +32,7 @@ Rather than relying on prompt-only automation, the system uses a state-driven pi
 - **Frontend**: Next.js 14 App Router + Tailwind CSS
 - **LLM**: OpenAI (gpt-4o-mini for scoring/decisions, gpt-4o for email drafting)
 - **Deployment**: Azure Container Apps (scale-to-zero) via Bicep IaC
+- **Demo Isolation**: Per-visitor session-scoped leads via httpOnly cookie
 
 ## Local Development & Demo Setup
 
@@ -62,7 +69,6 @@ make seed
 
 ### Access
 
-- **Live Demo**: https://leadops-frontend-dev.greenstone-4f556952.westeurope.azurecontainerapps.io
 - **Frontend (local)**: http://localhost:3004
 - **Backend API (local)**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
@@ -87,6 +93,14 @@ All endpoints under `/api/v1/`:
 | POST | /leads/{id}/drafts/{draft_id}/approve_send | Approve & send |
 | GET | /leads/{id}/activity | Activity timeline |
 | GET | /leads/{id}/traces | Pipeline traces |
+| GET | /leads/{id}/outcome-stages | Outcome stage history |
+| POST | /leads/{id}/outcome-stages | Transition outcome stage |
+| GET | /leads/{id}/next-stages | Valid next stages |
+| POST | /leads/{id}/inbound-reply | Simulate inbound reply |
+| GET | /leads/{id}/classifications | Reply classification history |
+| GET | /dashboard/stats | Dashboard statistics |
+| GET | /notifications | List notifications |
+| POST | /notifications/{id}/read | Mark notification read |
 | GET | /settings/scoring-config | Get scoring config |
 | PUT | /settings/scoring-config | Update scoring config |
 | GET | /leads/processing-stream | SSE progress stream |
